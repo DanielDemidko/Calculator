@@ -4,6 +4,13 @@ Operation::Operation(const std::function<double(double, double)>& f, const int p
 {
 }
 
+Operation & Operation::operator=(const Operation & other)
+{
+    Func = other.Func;
+    Priority = other.Priority;
+    return *this;
+}
+
 double Operation::operator()(const double a, const double b) const
 {
     return Func(a, b);
@@ -14,17 +21,23 @@ bool Operation::operator>(const Operation &other) const
     return Priority > other.Priority;
 }
 
-bool Operation::IsMaxPriority() const
+bool Operation::operator<(const Operation &other) const
 {
-    return Priority == 2;
+    return Priority < other.Priority;
 }
 
-std::optional<Operation> Operation::Parse(const std::string_view & str)
+bool Operation::IsMaxPriority() const
+{
+    return Priority == 3;
+}
+
+std::optional<Operation> Operation::ParseFrom(const std::string_view & str)
 {
     switch (str.front())
     {
     case '+':
-        return Operation(std::plus<double>(), 2);
+        // Больше чем - потому что -a + b
+        return Operation(std::plus<double>(), 3);
     case '-':
         return Operation(std::minus<double>(), 2);
     case '*':

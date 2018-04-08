@@ -3,6 +3,7 @@
 #include "Parser.h"
 #include <string>
 
+
 double Node::operator()() const
 {
     if (Value.type() == typeid(Operation))
@@ -12,26 +13,30 @@ double Node::operator()() const
     return std::any_cast<double>(Value);
 }
 
-inline Node::Node(const double val) : Value(val)
+Node::Node(const double val) : Value(val)
 {
 }
 
-inline Node::Node(const std::vector<std::string>& source)
+Node::Node(const std::vector<std::string>& source)
 {
-    if (source.empty())
-    {
-        Value = 0;
-        return;
-    }
-    const auto[operation, iter] = Parser::MaxPriorityOperation(source);
+    auto[operation, iter] = Parser::MaxPriorityOperation(source);
     if (!operation.has_value())
     {
-        Value = std::stod(source.front());
+        Value = source.empty()? 0: std::stod(source.front());
         return;
     }
+    // path to "a / -b"
+    if (iter != source.cbegin())
+    {
+        if (const auto prev = Operation::ParseFrom(*(iter - 1)); 
+        prev.has_value() && prev.value() < operation.value())
+        {
+            operation = prev;
+            --iter;
+        }
+    }
+    //
     Value = operation.value();
-    Left = ((iter == source.cbegin()) ?
-        std::make_shared<Node>(0) : std::make_shared<Node>(Node({ source.cbegin(), iter })));
-    Right = ((iter == source.cend() - 1) ?
-        std::make_shared<Node>(0) : std::make_shared<Node>(Node({ iter + 1, source.cend() })));
+    Left = std::make_shared<Node>(Node({ source.cbegin(), iter }));
+    Right = std::make_shared<Node>(Node({ iter + 1, source.cend() }));
 }

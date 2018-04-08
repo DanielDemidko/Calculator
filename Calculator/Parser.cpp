@@ -7,7 +7,7 @@ Parser::MaxPriorityOperation(const std::vector<std::string>& source)
     std::vector<std::string>::const_iterator iter = source.cend();
     for (auto i = source.cbegin(); i < source.cend(); ++i)
     {
-        std::optional<Operation> maybeOp(Operation::Parse(*i));
+        const auto maybeOp = Operation::ParseFrom(*i);
         if (!maybeOp.has_value())
         {
             continue;
@@ -15,7 +15,7 @@ Parser::MaxPriorityOperation(const std::vector<std::string>& source)
         if (!operation.has_value() || (maybeOp.value() > operation.value()))
         {
             iter = i;
-            operation.;
+            operation = maybeOp;
         }
         if (operation.value().IsMaxPriority())
         {
