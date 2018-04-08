@@ -36,7 +36,7 @@ std::optional<Operation> Operation::ParseFrom(const std::string_view & str)
     switch (str.front())
     {
     case '+':
-        // Больше чем - потому что -a + b
+        //  "-a + b" => '+' > '-'
         return Operation(std::plus<double>(), 3);
     case '-':
         return Operation(std::minus<double>(), 2);
